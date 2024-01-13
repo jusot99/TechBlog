@@ -1,0 +1,171 @@
+{% load tailwind_tags static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Meta tags for character set and viewport -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Title, Tailwind CSS, and Font Awesome -->
+    <title>{{ user.username }} - TechBlog</title>
+    <!-- Add the link tag for the favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.ico' %}">
+    {% tailwind_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100">
+    
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-500 p-4 text-white">
+        <!-- Navigation content -->
+        <div class="container mx-auto flex items-center justify-between">
+            <a href="{% url 'index' %}" class="text-xl font-semibold flex items-center">
+                Jusot's Blog
+            </a>
+            <!-- User actions and dropdown -->
+            <div class="flex space-x-4 items-center">
+                <a href="{% url 'dashboard' %}" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                </a>
+                {% if user.is_authenticated %}
+                    <!-- Additional links for authenticated users -->
+                    <a href="{% url 'articles' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-newspaper mr-2"></i>Articles
+                    </a>
+                    <a href="{% url 'categories' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-list mr-2"></i>Categories
+                    </a>
+                {% endif %}
+                <!-- Common navigation links -->
+                <a href="{% url 'about' %}" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-info-circle mr-2"></i>About
+                </a>
+                <a href="{% url 'contact' %}" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-envelope mr-2"></i>Contact
+                </a>
+                <!-- User-specific actions or login/register links -->
+                {% if user.is_authenticated %}
+                    <!-- Dropdown for user actions -->
+                    <div class="relative inline-block text-left">
+                        <!-- User profile button -->
+                        <div>
+                            <button id="userDropdown" type="button" class="flex items-center text-white focus:outline-none">
+                                {% if user.profile.photo %}
+                                    <!-- Display user profile picture if available -->
+                                    <img src="{{ user.profile.photo.url }}" alt="{{ user.username }} Profile Picture" class="h-16 w-16 rounded-full object-cover">
+                                {% else %}
+                                    <!-- Display default user icon if no profile picture -->
+                                    <i class="fas fa-user-circle text-2xl mr-2"></i>
+                                {% endif %}
+                                <span class="text-sm">{{ user.username }}</span>
+                            </button>
+                        </div>
+                        <!-- Dropdown menu for user actions -->
+                        <div id="userDropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                                <!-- Dropdown menu items -->
+                                <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Profile</a>
+                                <a href="{% url 'notifications' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Notifications</a>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Links for non-authenticated users -->
+                    <a href="{% url 'login' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                    <a href="{% url 'register' %}" class="hover:text-gray-300 flex items-center">  
+                        <i class="fas fa-user-plus mr-2"></i>Register
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- User profile information and update form -->
+    <div class="container mx-auto flex justify-center items-center mt-8">
+        <div class="w-full max-w-md">
+            {% if messages %}
+                <!-- Display messages (success/error) if any -->
+                <div class="messages">
+                    {% for message in messages %}
+                        <div{% if message.tags %} class="{% if 'success' in message.tags %}bg-green-500 text-white{% endif %}{% if 'error' in message.tags %}bg-red-500 text-white{% endif %} p-2 mb-2 rounded"{% endif %}>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- User profile header -->
+            <h5 class="text-3xl font-semibold mb-4">{{ user.username }} - TechBlog</h5>
+            
+            <!-- Modal for updating user profile -->
+            <div id="profileModal" class="modal" aria-modal="true">
+                <div class="modal-content bg-white p-4 rounded shadow-lg">
+                    <!-- User profile update form -->
+                    <form method="post" enctype="multipart/form-data" class="mt-4">
+                        {% csrf_token %}
+
+                        <!-- First Name input -->
+                        {{ profile_form.first_name.errors }}
+                        <div class="mb-4">
+                            <label for="id_first_name" class="sr-only">First Name</label>
+                            <input type="text" id="id_first_name" name="first_name" placeholder="First Name" value="{{ profile_form.first_name.value }}" class="w-full px-4 py-2 border rounded-md">
+                        </div>
+
+                        <!-- Last Name input -->
+                        {{ profile_form.last_name.errors }}
+                        <div class="mb-4">
+                            <label for="id_last_name" class="sr-only">Last Name</label>
+                            <input type="text" id="id_last_name" name="last_name" placeholder="Last Name" value="{{ profile_form.last_name.value }}" class="w-full px-4 py-2 border rounded-md">
+                        </div>
+
+                        <!-- Email input -->
+                        {{ profile_form.email.errors }}
+                        <div class="mb-4">
+                            <label for="id_email" class="sr-only">Email</label>
+                            <input type="email" id="id_email" name="email" placeholder="Email" value="{{ profile_form.email.value }}" class="w-full px-4 py-2 border rounded-md">
+                        </div>
+
+                        <!-- Photo input -->
+                        {{ profile_form.photo.errors }}
+                        <div class="mb-4">
+                            <label for="id_photo" class="sr-only">Photo</label>
+                            <input type="file" id="id_photo" name="photo" class="w-full px-4 py-2 border rounded-md">
+                        </div>
+
+                        <!-- Gender selection -->
+                        {{ profile_form.gender.errors }}
+                        <div class="mb-4">
+                            <label for="id_gender" class="sr-only">Gender</label>
+                            <select id="id_gender" name="gender" class="w-full px-4 py-2 border rounded-md">
+                                <option value="" selected disabled>Select Gender</option>
+                                <option value="M" {% if profile_form.gender.value == 'M' %}selected{% endif %}>Male</option>
+                                <option value="F" {% if profile_form.gender.value == 'F' %}selected{% endif %}>Female</option>
+                            </select>
+                        </div>
+
+                        <!-- Submit button -->
+                        <div class="flex justify-end mt-4">
+                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:shadow-outline-blue">Update Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript to toggle user dropdown -->
+    <script>
+        document.getElementById('userDropdown').addEventListener('click', function () {
+            var dropdownMenu = document.getElementById('userDropdownMenu');
+            dropdownMenu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+
+</html>

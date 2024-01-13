@@ -1,0 +1,115 @@
+{% load tailwind_tags static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Meta tags for character set and viewport -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Title, Tailwind CSS, and Font Awesome -->
+    <title>Articles in {{ category.name }} - TechBlog</title>
+    <!-- Add the link tag for the favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.ico' %}">
+    {% tailwind_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100">
+     <!-- Navigation Bar -->
+     <nav class="bg-blue-500 p-4 text-white">
+        <div class="container mx-auto flex items-center justify-between">
+            <!-- Blog Name -->
+            <a href="{% url 'index' %}" class="text-xl font-semibold flex items-center">
+                Jusot's Blog
+            </a>
+            <!-- Navigation Links -->
+            <div class="flex space-x-4 items-center">
+                <a href="{% url 'dashboard' %}" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                </a>
+                {% if user.is_authenticated %}
+                    <!-- Links for authenticated users -->
+                    <a href="{% url 'articles' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-newspaper mr-2"></i>Articles
+                    </a>
+                    <a href="{% url 'categories' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-list mr-2"></i>Categories
+                    </a>
+                {% endif %}
+                <!-- Common Links -->
+                <a href="{% url 'about' %}" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-info-circle mr-2"></i>About
+                </a>
+                <a href="{% url 'contact' %}" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-envelope mr-2"></i>Contact
+                </a>
+                <!-- Dropdown for user actions or login/register links -->
+                {% if user.is_authenticated %}
+                    <div class="relative inline-block text-left">
+                        <div>
+                            <button id="userDropdown" type="button" class="flex items-center text-white focus:outline-none">
+                                {% if user.profile.photo %}
+                                    <img src="{{ user.profile.photo.url }}" alt="{{ user.username }} Profile Picture" class="h-16 w-16 rounded-full object-cover">
+                                {% else %}
+                                    <i class="fas fa-user-circle text-2xl mr-2"></i>
+                                {% endif %}
+                                <span class="text-sm">{{ user.username }}</span>
+                            </button>
+                        </div>
+                        <!-- Dropdown menu for authenticated users -->
+                        <div id="userDropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                                <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Profile</a>
+                                <a href="{% url 'notifications' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Notifications</a>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Links for non-authenticated users -->
+                    <a href="{% url 'login' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                    <a href="{% url 'register' %}" class="hover:text-gray-300 flex items-center">  
+                        <i class="fas fa-user-plus mr-2"></i>Register
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Container for articles in the specified category -->
+    <div class="container mx-auto mt-8">
+        <!-- Title indicating the category -->
+        <h1 class="text-3xl font-bold mb-4">Articles in {{ category.name }}</h1>
+        <!-- Grid layout for displaying articles -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for article in articles %}
+                <!-- Article card -->
+                <div class="bg-white p-4 shadow-md">
+                    <!-- Article title -->
+                    <h3 class="text-xl font-bold mb-2">{{ article.title }}</h3>
+                    <!-- Article content preview -->
+                    <p class="text-gray-600">{{ article.content|truncatechars:150 }}</p>
+                    <!-- Link to read the full article -->
+                    <a href="{% url 'article_detail' slug=article.slug %}" class="text-blue-500 hover:underline">Read more</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Tailwind CSS and Other JS Scripts -->
+    {% tailwind_css %}
+    <!-- Add any additional scripts or CDN links here -->
+    <script>
+        // JavaScript to toggle dropdown
+        document.getElementById('userDropdown').addEventListener('click', function () {
+            var dropdownMenu = document.getElementById('userDropdownMenu');
+            dropdownMenu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+
+</html>

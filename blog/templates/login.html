@@ -1,0 +1,62 @@
+{% load tailwind_tags static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Meta tags for character set and viewport -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Title and Tailwind CSS -->
+    <title>Login - TechBlog</title>
+    <!-- Add the link tag for the favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.ico' %}">
+    {% tailwind_css %}
+</head>
+
+<body class="bg-gray-100">
+    <div class="container mx-auto flex justify-center items-center h-screen">
+        <div class="w-full max-w-md">
+            <!-- Display messages (success/error) if any -->
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div{% if message.tags %} class="{% if 'success' in message.tags %}bg-green-500 text-white{% endif %}{% if 'error' in message.tags %}bg-red-500 text-white{% endif %} p-2 mb-2 rounded"{% endif %}>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Login Form -->
+            <form method="post" action="{% url 'login' %}" class="bg-white p-6 rounded-lg shadow-md">
+                {% csrf_token %}
+                <h1 class="text-3xl font-bold mb-8 text-center">Login to TechBlog</h1>
+
+                <!-- Username Input -->
+                <div class="mb-4">
+                    <label for="id_username" class="sr-only">Username</label>
+                    <input type="text" id="id_username" name="username" placeholder="Username" class="w-full px-4 py-2 border rounded-md">
+                </div>
+
+                <!-- Password Input -->
+                <div class="mb-4">
+                    <label for="id_password" class="sr-only">Password</label>
+                    <input type="password" id="id_password" name="password" placeholder="Password" class="w-full px-4 py-2 border rounded-md">
+                </div>
+
+                <!-- Login Button -->
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:shadow-outline-blue">Login</button>
+            </form>
+
+            <!-- Link to Register Page -->
+            <p class="mt-4 text-center">Don't have an account? <a href="{% url 'register' %}" class="text-blue-500">Register here</a></p>
+        </div>
+    </div>
+
+    <!-- Tailwind CSS (for dynamic styles) -->
+    {% tailwind_css %}
+</body>
+
+</html>

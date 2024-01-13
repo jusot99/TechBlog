@@ -1,0 +1,194 @@
+{% load tailwind_tags static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ article.title }} - TechBlog</title>
+    <!-- Add the link tag for the favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.ico' %}">
+    {% tailwind_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100">
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-500 p-4 text-white">
+        <div class="container mx-auto flex items-center justify-between">
+            <!-- Site logo or name -->
+            <a href="{% url 'index' %}" class="text-xl font-semibold flex items-center">
+                Jusot's Blog
+            </a>
+            <!-- Navigation links and user actions -->
+            <div class="flex space-x-4 items-center">
+                <!-- Home link -->
+                <a href="{% url 'index' %}" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
+                <!-- Display articles and categories links if user is authenticated -->
+                {% if user.is_authenticated %}
+                    <a href="{% url 'articles' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-newspaper mr-2"></i>Articles
+                    </a>
+                    <a href="{% url 'categories' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-list mr-2"></i>Categories
+                    </a>
+                {% endif %}
+                <!-- Other navigation links -->
+                <a href="{% url 'about' %}" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-info-circle mr-2"></i>About
+                </a>
+                <a href="{% url 'contact' %}" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-envelope mr-2"></i>Contact
+                </a>
+                <!-- Dropdown for user actions -->
+                {% if user.is_authenticated %}
+                    <div class="relative inline-block text-left">
+                        <div>
+                            <button id="userDropdown" type="button" class="flex items-center text-white focus:outline-none">
+                                <!-- Display user's profile picture or default icon -->
+                                {% if user.profile.photo %}
+                                    <img src="{{ user.profile.photo.url }}" alt="{{ user.username }} Profile Picture" class="h-16 w-16 rounded-full object-cover">
+                                {% else %}
+                                    <i class="fas fa-user-circle text-2xl mr-2"></i>
+                                {% endif %}
+                                <span class="text-sm">{{ user.username }}</span>
+                            </button>
+                        </div>
+                        <!-- Dropdown menu with user options -->
+                        <div id="userDropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                                <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Profile</a>
+                                <a href="{% url 'notifications' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Notifications</a>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Display login and register links if user is not authenticated -->
+                    <a href="{% url 'login' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                    <a href="{% url 'register' %}" class="hover:text-gray-300 flex items-center">  
+                        <i class="fas fa-user-plus mr-2"></i>Register
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content area -->
+    <div class="container mx-auto mt-8">
+        <!-- Article details -->
+        <article class="bg-white p-8 shadow-md">
+            <h1 class="text-4xl font-bold mb-4">{{ article.title }}</h1>
+            <p class="text-gray-600 mb-4">
+                Published on {{ article.pub_date|date:"F d, Y" }} by 
+                <!-- Link to author's profile page -->
+                {% if user.is_authenticated %}
+                    <a href="{% url 'author_detail' username=article.author.username %}" class="text-blue-500 hover:underline">{{ article.author.username }}</a>
+                {% else %}
+                    <span class="text-blue-500">{{ article.author.username }}</span>
+                {% endif %}
+            </p>
+            <div class="mb-8">
+                <!-- Render article content with safe filter to allow HTML -->
+                {{ article.content|safe }}
+            </div>
+            <!-- Bookmark button -->
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'bookmark_article' article.id %}" class="mt-4">
+                {% csrf_token %}
+                <button type="submit" class="bg-blue-500 text-white p-2 rounded">
+                    <i class="fas fa-bookmark mr-2"></i> Bookmark
+                </button>
+            </form>
+            {% else %}
+            <p class="text-gray-600">Please <a href="{% url 'login' %}">login</a> to bookmark this article.</p>
+            {% endif %}
+            <!-- Like and Unlike Buttons -->
+            <div class="mb-4">
+                {% if user.is_authenticated %}
+                    {% if user.profile.userstatistics.likes_given > 0 and article.likes.count > 0 %}
+                        <p class="text-gray-600 mb-2"><strong>{{ article.likes.count }}</strong> {% if article.likes.count == 1 %}person{% else %}people{% endif %} liked this</p>
+                    {% endif %}
+                    <!-- Form to like an article -->
+                    <form method="post" action="{% url 'like_article' article.id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="text-blue-500 hover:underline focus:outline-none">
+                            <i class="fas fa-thumbs-up mr-2"></i>
+                        </button>
+                    </form>
+                    <!-- Form to unlike an article -->
+                    <form method="post" action="{% url 'unlike_article' article.id %}" class="inline ml-4">
+                        {% csrf_token %}
+                        <button type="submit" class="text-red-500 hover:underline focus:outline-none">
+                            <i class="fas fa-thumbs-down mr-2"></i>
+                        </button>
+                    </form>
+                {% else %}
+                    <p class="text-gray-600">Please <a href="{% url 'login' %}">login</a> to like or unlike this article.</p>
+                {% endif %}
+            </div>
+            <!-- Social Media Sharing Buttons -->
+            {% if user.is_authenticated %}
+            <div class="mb-4">
+                <p class="text-lg font-bold mb-2">Share this article:</p>
+                <div class="flex items-center space-x-4">
+                    <!-- Facebook Share Button -->
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline flex items-center">
+                        <i class="fab fa-facebook-square"></i>
+                    </a>
+                    <!-- Twitter Share Button -->
+                    <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ article.title }}" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline flex items-center">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <!-- LinkedIn Share Button -->
+                    <a href="https://www.linkedin.com/shareArticle?url={{ request.build_absolute_uri }}&title={{ article.title }}" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline flex items-center">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            <!-- Comments Section -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-4">Comments</h2>
+
+                <!-- Display existing comments -->
+                {% for comment in article.comments.all %}
+                    <div class="mb-4">
+                        <p class="text-gray-600"><strong>{{ comment.author.username }}</strong> on {{ comment.pub_date|date:"F d, Y" }}</p>
+                        <p>{{ comment.content }}</p>
+                    </div>
+                {% endfor %}
+
+                <!-- Add a simple form to submit new comments -->
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'add_comment' article.id %}" class="mt-4"> 
+                        {% csrf_token %}
+                        <textarea name="content" rows="4" class="w-full p-2 border rounded" placeholder="Add your comment..."></textarea>
+                        <button type="submit" class="bg-blue-500 text-white p-2 rounded mt-2">Add Comment</button>
+                    </form>
+                {% else %}
+                    <p class="text-gray-600">Please <a href="{% url 'login' %}">login</a> to leave a comment.</p>
+                {% endif %}
+            </div>
+            <!-- End Comments Section -->
+        </article>
+    </div>
+
+    <!-- Tailwind CSS and Other JS Scripts -->
+    {% tailwind_css %}
+    <!-- Add any additional scripts or CDN links here -->
+    <script>
+        // JavaScript to toggle dropdown
+        document.getElementById('userDropdown').addEventListener('click', function () {
+            var dropdownMenu = document.getElementById('userDropdownMenu');
+            dropdownMenu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+
+</html>

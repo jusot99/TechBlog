@@ -1,0 +1,28 @@
+{% block content %}
+  <h2>Add a Comment</h2>
+  <!-- Comment form with POST method and action pointing to 'add_comment' view for the specific article -->
+  <form method="post" action="{% url 'add_comment' article.id %}">
+    {% csrf_token %}
+    <!-- Render form fields as paragraphs -->
+    {{ form.as_p }}
+    <!-- Submit button for adding a comment -->
+    <button type="submit">Add Comment</button>
+  </form>
+  
+  {% if form.errors %}
+    <!-- Display form errors if any -->
+    <div class="alert alert-danger mt-3" role="alert">
+      <strong>Error:</strong> Please correct the following errors.
+      <ul>
+        {% for field, errors in form.errors.items %}
+          {% for error in errors %}
+            <li>{{ field }}: {{ error }}</li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  
+  <!-- Link to go back to the article detail page -->
+  <a href="{% url 'article_detail' article.slug %}">Back to Article</a>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% load tailwind_tags static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Meta tags for character set and viewport -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Title and Tailwind CSS -->
+    <title>TechBlog</title>
+    <!-- Add the link tag for the favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.ico' %}">
+    {% tailwind_css %}
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-100 text-gray-800 font-sans">
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-500 p-4 text-white">
+        <div class="container mx-auto flex items-center justify-between">
+            <!-- Branding/Logo -->
+            <a href="{% url 'index' %}" class="text-xl font-semibold flex items-center">
+                Jusot's Blog
+            </a>
+
+            <!-- Navigation Links -->
+            <div class="flex space-x-4 items-center">
+                <!-- Home Link -->
+                <a href="{% url 'index' %}" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
+
+                {% if user.is_authenticated %}
+                    <!-- Authenticated User Links -->
+                    <a href="{% url 'articles' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-newspaper mr-2"></i>Articles
+                    </a>
+                    <a href="{% url 'categories' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-list mr-2"></i>Categories
+                    </a>
+                {% endif %}
+
+                <!-- Non-Authenticated User Links -->
+                <a href="{% url 'about' %}" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-info-circle mr-2"></i>About
+                </a>
+                <a href="{% url 'contact' %}" class="hover:text-gray-300 flex items-center">
+                    <i class="fas fa-envelope mr-2"></i>Contact
+                </a>
+
+                {% if user.is_authenticated %}
+                    <!-- Authenticated User Dropdown -->
+                    <a href="{% url 'dashboard' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+
+                    <!-- User Dropdown with Profile, Notifications, and Logout Links -->
+                    <div class="relative inline-block text-left">
+                        <div>
+                            <button id="userDropdown" type="button" class="flex items-center text-white focus:outline-none">
+                                <!-- User Profile Picture or Default Icon -->
+                                {% if user.profile.photo %}
+                                    <img src="{{ user.profile.photo.url }}" alt="{{ user.username }} Profile Picture" class="h-16 w-16 rounded-full object-cover">
+                                {% else %}
+                                    <i class="fas fa-user-circle text-2xl mr-2"></i>
+                                {% endif %}
+                                <!-- User's Username -->
+                                <span class="text-sm">{{ user.username }}</span>
+                            </button>
+                        </div>
+
+                        <!-- Dropdown menu for User Actions -->
+                        <div id="userDropdownMenu" class="hidden origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                                <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Profile</a>
+                                <a href="{% url 'notifications' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Notifications</a>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- Non-Authenticated User Links -->
+                    <a href="{% url 'login' %}" class="hover:text-gray-300 flex items-center">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    </a>
+                    <a href="{% url 'register' %}" class="hover:text-gray-300 flex items-center">  
+                        <i class="fas fa-user-plus mr-2"></i>Register
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-center py-16">
+        <div class="container mx-auto">
+            <!-- Heading and Subtitle for Hero Section -->
+            <h1 class="text-4xl md:text-6xl font-bold">Welcome to Jusot's Tech Blog</h1>
+            <p class="mt-4 text-lg">Exploring the latest in technology and development.</p>
+        </div>
+    </header>
+
+    <main>
+        <!-- Featured Articles Section -->
+        <section class="container mx-auto my-8 mb-4">
+            <!-- Section Heading -->
+            <h2 class="text-2xl font-semibold mb-4">Featured Articles</h2>
+            
+            <!-- Grid for Featured Articles -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for article in featured_articles|slice:":3" %}
+                    <!-- Card for Each Featured Article -->
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <!-- Article Title -->
+                        <h3 class="text-xl font-semibold mb-2">{{ article.title }}</h3>
+                        
+                        <!-- Article Content with Character Limit -->
+                        <p class="text-gray-600">{{ article.content|truncatechars:150 }}</p>
+                        
+                        <!-- Featured Status -->
+                        <p class="text-gray-600">Featured: {{ article.featured }}</p>
+                        
+                        <!-- Read More Link -->
+                        <a href="{% url 'article_detail' slug=article.slug %}" class="text-blue-500 mt-4 inline-block">Read More</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <!-- JavaScript to toggle dropdown -->
+    <script>
+        document.getElementById('userDropdown').addEventListener('click', function () {
+            var dropdownMenu = document.getElementById('userDropdownMenu');
+            dropdownMenu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+
+</html>

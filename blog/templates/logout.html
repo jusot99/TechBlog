@@ -1,0 +1,62 @@
+{% load tailwind_tags static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Meta tags for character set and viewport -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Title and Tailwind CSS -->
+    <title>Logout - TechBlog</title>
+    <!-- Add the link tag for the favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.ico' %}">
+    {% tailwind_css %}
+</head>
+
+<body class="bg-gray-100">
+    <div class="container mx-auto flex justify-center items-center h-screen">
+        <div class="w-full max-w-md">
+            <!-- Display messages (success/error) if any -->
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div{% if message.tags %} class="{% if 'success' in message.tags %}bg-green-500 text-white{% endif %}{% if 'error' in message.tags %}bg-red-500 text-white{% endif %} p-2 mb-2 rounded"{% endif %}>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Logout Success Message -->
+            <h1 class="text-3xl font-bold mb-4 text-center">You have been successfully logged out</h1>
+
+            <!-- Logout Confirmation Link -->
+            <p class="text-center">
+                Would you like to 
+                <a href="#" onclick="confirmLogout()" class="text-blue-500">logout again</a>?
+            </p>
+
+            <!-- Return to Homepage Link -->
+            <p class="text-center mt-4">
+                <a href="{% url 'index' %}" class="text-blue-500">Return to homepage</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Tailwind CSS (for dynamic styles) -->
+    {% tailwind_css %}
+
+    <!-- JavaScript to confirm logout -->
+    <script>
+        function confirmLogout() {
+            var confirmLogout = confirm("Are you sure you want to logout?");
+            if (confirmLogout) {
+                window.location.href = "{% url 'logout' %}";
+            }
+        }
+    </script>
+</body>
+
+</html>
